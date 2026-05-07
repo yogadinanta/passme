@@ -264,11 +264,169 @@ h1{
 hr{
     border-color:#e5e7eb;
 }
+.toast-copy{
+    position: fixed;
+    top: 30px;
+    right: 30px;
+    background: linear-gradient(
+        135deg,
+        #009B4C,
+        #00c764
+    );
+    color: white;
+    padding: 14px 22px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: bold;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    transform: translateX(120%);
+    opacity: 0;
+    transition: all 0.4s ease;
+    z-index: 9999;
+}
 
+.toast-copy.show{
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.toast-copy i{
+    font-size: 20px;
+    color: #F8C51B;
+}
+.delete-modal{
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: 0.3s;
+    z-index: 99999;
+}
+
+.delete-modal.show{
+    opacity: 1;
+    visibility: visible;
+}
+
+.delete-box{
+    background: white;
+    width: 400px;
+    max-width: 90%;
+    border-radius: 24px;
+    padding: 30px;
+    text-align: center;
+    transform: scale(0.8);
+    transition: 0.3s;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+}
+
+.delete-modal.show .delete-box{
+    transform: scale(1);
+}
+
+.delete-icon{
+    width: 90px;
+    height: 90px;
+    background: #fee2e2;
+    color: #dc2626;
+    border-radius: 50%;
+    margin: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 40px;
+    margin-bottom: 20px;
+}
+
+.delete-box h3{
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.delete-box p{
+    color: #6b7280;
+    margin-bottom: 25px;
+}
+
+.delete-actions{
+    display: flex;
+    gap: 12px;
+}
+
+.delete-actions button,
+.delete-actions a{
+    flex: 1;
+    border: none;
+    padding: 12px;
+    border-radius: 14px;
+    font-weight: bold;
+    text-decoration: none;
+    transition: 0.2s;
+}
+
+.cancel-btn{
+    background: #f3f4f6;
+    color: #111827;
+}
+
+.cancel-btn:hover{
+    background: #e5e7eb;
+}
+
+.confirm-btn{
+    background: #dc2626;
+    color: white;
+}
+
+.confirm-btn:hover{
+    background: #b91c1c;
+}
 </style>
 
 </head>
 <body>
+    <div class="delete-modal" id="deleteModal">
+
+    <div class="delete-box">
+
+        <div class="delete-icon">
+            <i class="fa-solid fa-trash"></i>
+        </div>
+
+        <h3>Delete Password?</h3>
+
+        <p>
+            This password entry will be permanently deleted.
+        </p>
+
+        <div class="delete-actions">
+
+            <button class="cancel-btn"
+                    onclick="closeDeleteModal()">
+                Cancel
+            </button>
+
+            <a href="#"
+               id="confirmDeleteBtn"
+               class="confirm-btn">
+               Delete
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+    <div id="copyToast" class="toast-copy">
+    <i class="fa-solid fa-circle-check"></i>
+    <span>Password copied successfully!</span>
+</div>
 
 <div class="container py-5">
 
@@ -398,13 +556,13 @@ hr{
 
                         <td>
 
-                            <a href="?delete=<?= $row['id'] ?>"
-                               class="btn btn-danger btn-sm"
-                               onclick="return confirm('Delete password?')">
+                           <button type="button"
+        class="btn btn-danger btn-sm"
+        onclick="openDeleteModal(<?= $row['id'] ?>)">
 
-                               <i class="fa-solid fa-trash"></i>
+    <i class="fa-solid fa-trash"></i>
 
-                            </a>
+</button>
 
                         </td>
 
@@ -423,13 +581,59 @@ hr{
 </div>
 
 <script>
+    function openDeleteModal(id){
 
-function copyPassword(password){
+    const modal =
+        document.getElementById('deleteModal');
 
-    navigator.clipboard.writeText(password);
+    const confirmBtn =
+        document.getElementById('confirmDeleteBtn');
 
-    alert("Password copied!");
+    confirmBtn.href = '?delete=' + id;
+
+    modal.classList.add('show');
 }
+
+function closeDeleteModal(){
+
+    document
+        .getElementById('deleteModal')
+        .classList.remove('show');
+}
+
+window.addEventListener('click', function(e){
+
+    const modal =
+        document.getElementById('deleteModal');
+
+    if(e.target === modal){
+
+        closeDeleteModal();
+    }
+});
+
+async function copyPassword(password){
+
+    try {
+
+        await navigator.clipboard.writeText(password);
+
+        const toast =
+            document.getElementById('copyToast');
+
+        toast.classList.add('show');
+
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 2500);
+
+    } catch (err) {
+
+        console.error(err);
+
+    }
+}
+
 
 function togglePassword(button, password){
 
